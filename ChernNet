@@ -1,0 +1,956 @@
+local ChernushkaSpeed = {}
+local player = game:GetService("Players").LocalPlayer
+local mouse = player:GetMouse()
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local workspace = game:GetService("Workspace")
+local camera = workspace.CurrentCamera
+local players = game:GetService("Players")
+local tweenService = game:GetService("TweenService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ChernushkaSpeed"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(8, 12, 28)
+ToggleButton.BorderColor3 = Color3.fromRGB(60, 120, 255)
+ToggleButton.BorderSizePixel = 2
+ToggleButton.Position = UDim2.new(0, 12, 1, -65)
+ToggleButton.Size = UDim2.new(0, 52, 0, 52)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Text = "★"
+ToggleButton.TextColor3 = Color3.fromRGB(60, 120, 255)
+ToggleButton.TextSize = 28
+ToggleButton.Draggable = true
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.Parent = ToggleButton
+ToggleCorner.CornerRadius = UDim.new(0, 12)
+
+ToggleButton.MouseEnter:Connect(function()
+    tweenService:Create(ToggleButton, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(12, 20, 44)}):Play()
+end)
+
+ToggleButton.MouseLeave:Connect(function()
+    tweenService:Create(ToggleButton, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(8, 12, 28)}):Play()
+end)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(6, 10, 22)
+MainFrame.BorderColor3 = Color3.fromRGB(60, 120, 255)
+MainFrame.BorderSizePixel = 2
+MainFrame.Position = UDim2.new(0.5, -380, 0.5, -280)
+MainFrame.Size = UDim2.new(0, 760, 0, 560)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false
+MainFrame.BackgroundTransparency = 0.05
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.Parent = MainFrame
+MainCorner.CornerRadius = UDim.new(0, 18)
+
+local GlowFrame = Instance.new("Frame")
+GlowFrame.Parent = MainFrame
+GlowFrame.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+GlowFrame.Size = UDim2.new(1, 0, 1, 0)
+GlowFrame.Position = UDim2.new(0, 0, 0, 0)
+GlowFrame.BackgroundTransparency = 0.92
+GlowFrame.ZIndex = 0
+
+local GlowCorner = Instance.new("UICorner")
+GlowCorner.Parent = GlowFrame
+GlowCorner.CornerRadius = UDim.new(0, 18)
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = Color3.fromRGB(10, 16, 34)
+TitleBar.Size = UDim2.new(1, 0, 0, 52)
+TitleBar.ZIndex = 2
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.Parent = TitleBar
+TitleCorner.CornerRadius = UDim.new(0, 18)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = TitleBar
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "CHERNUSHKA SPEED CITY"
+Title.TextColor3 = Color3.fromRGB(60, 120, 255)
+Title.TextSize = 22
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextScaled = false
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+CloseButton.Position = UDim2.new(1, -44, 0.5, -16)
+CloseButton.Size = UDim2.new(0, 32, 0, 32)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.ZIndex = 3
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.Parent = CloseButton
+CloseCorner.CornerRadius = UDim.new(0, 8)
+
+CloseButton.MouseEnter:Connect(function()
+    tweenService:Create(CloseButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    tweenService:Create(CloseButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(200, 40, 40)}):Play()
+end)
+
+local TabFrame = Instance.new("Frame")
+TabFrame.Parent = MainFrame
+TabFrame.BackgroundColor3 = Color3.fromRGB(8, 14, 28)
+TabFrame.Position = UDim2.new(0, 12, 0, 64)
+TabFrame.Size = UDim2.new(1, -24, 0, 44)
+TabFrame.ZIndex = 2
+
+local TabCorner = Instance.new("UICorner")
+TabCorner.Parent = TabFrame
+TabCorner.CornerRadius = UDim.new(0, 12)
+
+local tabNames = {"AUTOFARM", "TRADE SPY", "TRAIL VIEWER", "MISC"}
+local tabButtons = {}
+local tabContents = {}
+local selectedTab = 1
+
+for i, name in ipairs(tabNames) do
+    local btn = Instance.new("TextButton")
+    btn.Parent = TabFrame
+    btn.BackgroundColor3 = i == 1 and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(14, 22, 46)
+    btn.Position = UDim2.new(0, 6 + ((i-1) * 115), 0, 4)
+    btn.Size = UDim2.new(0, 108, 0, 36)
+    btn.Font = Enum.Font.GothamBold
+    btn.Text = name
+    btn.TextColor3 = i == 1 and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(140, 180, 255)
+    btn.TextSize = 13
+    btn.ZIndex = 3
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.Parent = btn
+    btnCorner.CornerRadius = UDim.new(0, 10)
+    
+    btn.MouseEnter:Connect(function()
+        if btn.BackgroundColor3 ~= Color3.fromRGB(60, 120, 255) then
+            tweenService:Create(btn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(20, 40, 80)}):Play()
+        end
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        if btn.BackgroundColor3 ~= Color3.fromRGB(60, 120, 255) then
+            tweenService:Create(btn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(14, 22, 46)}):Play()
+        end
+    end)
+    
+    table.insert(tabButtons, btn)
+end
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundColor3 = Color3.fromRGB(6, 10, 22)
+ContentFrame.Position = UDim2.new(0, 12, 0, 118)
+ContentFrame.Size = UDim2.new(1, -24, 1, -132)
+ContentFrame.ZIndex = 1
+
+local ContentCorner = Instance.new("UICorner")
+ContentCorner.Parent = ContentFrame
+ContentCorner.CornerRadius = UDim.new(0, 14)
+
+for i = 1, 4 do
+    local page = Instance.new("ScrollingFrame")
+    page.Parent = ContentFrame
+    page.BackgroundColor3 = Color3.fromRGB(6, 10, 22)
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.CanvasSize = UDim2.new(0, 0, 0, 800)
+    page.ScrollBarThickness = 6
+    page.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 255)
+    page.Visible = i == 1
+    page.BorderSizePixel = 0
+    page.ScrollingEnabled = true
+    page.ZIndex = 1
+    
+    table.insert(tabContents, page)
+end
+
+for i, btn in ipairs(tabButtons) do
+    btn.MouseButton1Click:Connect(function()
+        selectedTab = i
+        for j, b in ipairs(tabButtons) do
+            b.BackgroundColor3 = Color3.fromRGB(14, 22, 46)
+            b.TextColor3 = Color3.fromRGB(140, 180, 255)
+        end
+        btn.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        for j, page in ipairs(tabContents) do
+            page.Visible = j == i
+        end
+    end)
+end
+
+local function createToggle(parent, pos, name, default, callback)
+    local frame = Instance.new("Frame")
+    frame.Parent = parent
+    frame.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+    frame.Position = UDim2.new(0, 10, 0, pos)
+    frame.Size = UDim2.new(1, -20, 0, 52)
+    frame.Name = name .. "Frame"
+    frame.ZIndex = 1
+    
+    local corner = Instance.new("UICorner")
+    corner.Parent = frame
+    corner.CornerRadius = UDim.new(0, 10)
+    
+    frame.MouseEnter:Connect(function()
+        tweenService:Create(frame, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(12, 22, 48)}):Play()
+    end)
+    
+    frame.MouseLeave:Connect(function()
+        tweenService:Create(frame, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(8, 16, 34)}):Play()
+    end)
+    
+    local label = Instance.new("TextLabel")
+    label.Parent = frame
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0, 14, 0, 4)
+    label.Size = UDim2.new(0, 320, 1, -8)
+    label.Font = Enum.Font.GothamBold
+    label.Text = name
+    label.TextColor3 = Color3.fromRGB(210, 225, 255)
+    label.TextSize = 15
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.ZIndex = 2
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Parent = frame
+    toggleBtn.BackgroundColor3 = default and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(30, 40, 70)
+    toggleBtn.Position = UDim2.new(1, -56, 0.5, -14)
+    toggleBtn.Size = UDim2.new(0, 48, 0, 28)
+    toggleBtn.Text = ""
+    toggleBtn.AutoButtonColor = false
+    toggleBtn.ZIndex = 2
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.Parent = toggleBtn
+    toggleCorner.CornerRadius = UDim.new(1, 0)
+    
+    local inner = Instance.new("Frame")
+    inner.Parent = toggleBtn
+    inner.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    inner.Position = default and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 3, 0.5, -11)
+    inner.Size = UDim2.new(0, 22, 0, 22)
+    inner.ZIndex = 3
+    
+    local innerCorner = Instance.new("UICorner")
+    innerCorner.Parent = inner
+    innerCorner.CornerRadius = UDim.new(1, 0)
+    
+    local state = default or false
+    
+    task.spawn(function()
+        callback(state)
+    end)
+    
+    toggleBtn.MouseEnter:Connect(function()
+        if state then
+            tweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(80, 150, 255)}):Play()
+        else
+            tweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 55, 90)}):Play()
+        end
+    end)
+    
+    toggleBtn.MouseLeave:Connect(function()
+        if state then
+            tweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 120, 255)}):Play()
+        else
+            tweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(30, 40, 70)}):Play()
+        end
+    end)
+    
+    toggleBtn.MouseButton1Click:Connect(function()
+        state = not state
+        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(30, 40, 70)
+        local targetPos = state and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 3, 0.5, -11)
+        tweenService:Create(inner, TweenInfo.new(0.12), {Position = targetPos}):Play()
+        callback(state)
+    end)
+    
+    return frame
+end
+
+local collectingState = {
+    trillionaire = false,
+    ghost = false,
+    beach = false,
+    elite = false,
+    crates = false
+}
+
+local character = player.Character or player.CharacterAdded:Wait()
+
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+end)
+
+local function teleportToObject(obj)
+    if obj and obj:IsA("Model") then
+        local primaryPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+        if primaryPart and character and character.PrimaryPart then
+            character:SetPrimaryPartCFrame(primaryPart.CFrame * CFrame.new(0, 2, 0))
+            return true
+        end
+    end
+    return false
+end
+
+local function collectTrillionaireOrbs()
+    while collectingState.trillionaire do
+        pcall(function()
+            local city = workspace:FindFirstChild("TrillionaireCity")
+            if city then
+                local folder = city:FindFirstChild("TrillionaireOrbs")
+                if folder then
+                    for _, obj in ipairs(folder:GetChildren()) do
+                        if collectingState.trillionaire and obj:IsA("Model") and obj.Name:find("Trillionaire") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+            end
+        end)
+        wait(0.5)
+    end
+end
+
+local function collectGhostOrbs()
+    while collectingState.ghost do
+        pcall(function()
+            local city = workspace:FindFirstChild("GhostCity")
+            if city then
+                local folder1 = city:FindFirstChild("GhostOrbs")
+                if folder1 then
+                    for _, obj in ipairs(folder1:GetChildren()) do
+                        if collectingState.ghost and obj:IsA("Model") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+                
+                local folder2 = city:FindFirstChild("GhostOrbsMega")
+                if folder2 then
+                    for _, obj in ipairs(folder2:GetChildren()) do
+                        if collectingState.ghost and obj:IsA("Model") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+            end
+        end)
+        wait(0.5)
+    end
+end
+
+local function collectBeachOrbs()
+    while collectingState.beach do
+        pcall(function()
+            local map = workspace:FindFirstChild("BeachMap")
+            if map then
+                local folder = map:FindFirstChild("BeachOrbs")
+                if folder then
+                    for _, obj in ipairs(folder:GetChildren()) do
+                        if collectingState.beach and obj:IsA("Model") and obj.Name == "Beach3" then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+            end
+        end)
+        wait(0.5)
+    end
+end
+
+local function collectEliteOrbs()
+    while collectingState.elite do
+        pcall(function()
+            local city = workspace:FindFirstChild("EliteCity")
+            if city then
+                local f1 = city:FindFirstChild("EliteOrbs")
+                if f1 then
+                    for _, obj in ipairs(f1:GetChildren()) do
+                        if collectingState.elite and obj:IsA("Model") and obj.Name == "GoldenOrb" then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+                
+                local f2 = city:FindFirstChild("EliteOrbsFloat")
+                if f2 then
+                    for _, obj in ipairs(f2:GetChildren()) do
+                        if collectingState.elite and obj:IsA("Model") and obj.Name == "WhiteOrb" then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+                
+                local f3 = city:FindFirstChild("EliteOrbsFloat2")
+                if f3 then
+                    for _, obj in ipairs(f3:GetChildren()) do
+                        if collectingState.elite and obj:IsA("Model") and (obj.Name == "GoldenOrb" or obj.Name == "RainbowOrb") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+                
+                local f4 = city:FindFirstChild("MegaOrbs")
+                if f4 then
+                    for _, obj in ipairs(f4:GetChildren()) do
+                        if collectingState.elite and obj:IsA("Model") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+            end
+        end)
+        wait(0.5)
+    end
+end
+
+local function collectGhostCrates()
+    while collectingState.crates do
+        pcall(function()
+            local city = workspace:FindFirstChild("GhostCity")
+            if city then
+                local folder = city:FindFirstChild("GhostCrates")
+                if folder then
+                    for _, obj in ipairs(folder:GetChildren()) do
+                        if collectingState.crates and obj:IsA("Model") then
+                            teleportToObject(obj)
+                            wait(0.2)
+                        end
+                    end
+                end
+            end
+        end)
+        wait(0.5)
+    end
+end
+
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        tweenService:Create(MainFrame, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+userInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        MainFrame.Visible = false
+    end
+end)
+
+local farmPage = tabContents[1]
+local farmY = 5
+
+createToggle(farmPage, farmY, "Trillionaire City Orbs", false, function(state)
+    collectingState.trillionaire = state
+    task.spawn(collectTrillionaireOrbs)
+end)
+farmY = farmY + 58
+
+createToggle(farmPage, farmY, "Ghost City Orbs", false, function(state)
+    collectingState.ghost = state
+    task.spawn(collectGhostOrbs)
+end)
+farmY = farmY + 58
+
+createToggle(farmPage, farmY, "Beach Orbs", false, function(state)
+    collectingState.beach = state
+    task.spawn(collectBeachOrbs)
+end)
+farmY = farmY + 58
+
+createToggle(farmPage, farmY, "Elite City Orbs", false, function(state)
+    collectingState.elite = state
+    task.spawn(collectEliteOrbs)
+end)
+farmY = farmY + 58
+
+createToggle(farmPage, farmY, "Ghost Crates", false, function(state)
+    collectingState.crates = state
+    task.spawn(collectGhostCrates)
+end)
+farmY = farmY + 58
+
+farmPage.CanvasSize = UDim2.new(0, 0, 0, farmY + 10)
+
+local tradeSpyPage = tabContents[2]
+local tradeSpyY = 5
+
+local tradeSpyFrame = Instance.new("Frame")
+tradeSpyFrame.Parent = tradeSpyPage
+tradeSpyFrame.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+tradeSpyFrame.Position = UDim2.new(0, 10, 0, tradeSpyY)
+tradeSpyFrame.Size = UDim2.new(1, -20, 0, 370)
+
+local tradeSpyCorner = Instance.new("UICorner")
+tradeSpyCorner.Parent = tradeSpyFrame
+tradeSpyCorner.CornerRadius = UDim.new(0, 10)
+
+local tradeSpyTitle = Instance.new("TextLabel")
+tradeSpyTitle.Parent = tradeSpyFrame
+tradeSpyTitle.BackgroundTransparency = 1
+tradeSpyTitle.Size = UDim2.new(1, 0, 0, 34)
+tradeSpyTitle.Font = Enum.Font.GothamBold
+tradeSpyTitle.Text = "TRADE SPY"
+tradeSpyTitle.TextColor3 = Color3.fromRGB(60, 120, 255)
+tradeSpyTitle.TextSize = 18
+tradeSpyTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+local tradeScrollFrame = Instance.new("ScrollingFrame")
+tradeScrollFrame.Parent = tradeSpyFrame
+tradeScrollFrame.Position = UDim2.new(0, 5, 0, 38)
+tradeScrollFrame.Size = UDim2.new(1, -10, 1, -44)
+tradeScrollFrame.BackgroundColor3 = Color3.fromRGB(6, 12, 26)
+tradeScrollFrame.BorderSizePixel = 0
+tradeScrollFrame.ScrollBarThickness = 6
+tradeScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 255)
+tradeScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local tradeScrollCorner = Instance.new("UICorner")
+tradeScrollCorner.Parent = tradeScrollFrame
+tradeScrollCorner.CornerRadius = UDim.new(0, 8)
+
+local tradeLayout = Instance.new("UIListLayout")
+tradeLayout.Parent = tradeScrollFrame
+tradeLayout.Padding = UDim.new(0, 6)
+tradeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local TradeSessions = workspace:FindFirstChild("TradeSessions")
+
+if TradeSessions then
+    local function createSessionLabel(session)
+        if not session:IsA("Folder") then return end
+        
+        local player1 = session:FindFirstChild("Player1")
+        local player2 = session:FindFirstChild("Player2")
+        local p1Accept = session:FindFirstChild("Player1Accept")
+        local p2Accept = session:FindFirstChild("Player2Accept")
+        local p1Trading = session:FindFirstChild("Player1Trading")
+        local p2Trading = session:FindFirstChild("Player2Trading")
+        
+        if not (player1 and player2 and p1Accept and p2Accept and p1Trading and p2Trading) then
+            return
+        end
+        
+        local mainLabel = Instance.new("Frame")
+        mainLabel.Parent = tradeScrollFrame
+        mainLabel.BackgroundColor3 = Color3.fromRGB(10, 20, 42)
+        mainLabel.Size = UDim2.new(1, -10, 0, 130)
+        mainLabel.BackgroundTransparency = 0
+        
+        local mainCorner = Instance.new("UICorner")
+        mainCorner.Parent = mainLabel
+        mainCorner.CornerRadius = UDim.new(0, 8)
+        
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Parent = mainLabel
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Position = UDim2.new(0, 8, 0, 4)
+        nameLabel.Size = UDim2.new(1, -80, 0, 28)
+        nameLabel.Font = Enum.Font.GothamBold
+        nameLabel.Text = player1.Value .. "  <->  " .. player2.Value
+        nameLabel.TextColor3 = Color3.fromRGB(60, 160, 255)
+        nameLabel.TextSize = 15
+        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        
+        local stateLabel = Instance.new("TextLabel")
+        stateLabel.Parent = mainLabel
+        stateLabel.BackgroundTransparency = 1
+        stateLabel.Position = UDim2.new(1, -70, 0, 4)
+        stateLabel.Size = UDim2.new(0, 65, 0, 28)
+        stateLabel.Font = Enum.Font.GothamBold
+        stateLabel.Text = "0/2"
+        stateLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        stateLabel.TextSize = 14
+        stateLabel.TextXAlignment = Enum.TextXAlignment.Right
+        
+        local p1ItemsLabel = Instance.new("TextLabel")
+        p1ItemsLabel.Parent = mainLabel
+        p1ItemsLabel.BackgroundTransparency = 1
+        p1ItemsLabel.Position = UDim2.new(0, 8, 0, 36)
+        p1ItemsLabel.Size = UDim2.new(0.5, -12, 1, -46)
+        p1ItemsLabel.Font = Enum.Font.Gotham
+        p1ItemsLabel.Text = ""
+        p1ItemsLabel.TextColor3 = Color3.fromRGB(180, 200, 230)
+        p1ItemsLabel.TextSize = 12
+        p1ItemsLabel.TextXAlignment = Enum.TextXAlignment.Left
+        p1ItemsLabel.TextYAlignment = Enum.TextYAlignment.Top
+        p1ItemsLabel.TextWrapped = true
+        p1ItemsLabel.TextScaled = false
+        
+        local p2ItemsLabel = Instance.new("TextLabel")
+        p2ItemsLabel.Parent = mainLabel
+        p2ItemsLabel.BackgroundTransparency = 1
+        p2ItemsLabel.Position = UDim2.new(0.5, 6, 0, 36)
+        p2ItemsLabel.Size = UDim2.new(0.5, -12, 1, -46)
+        p2ItemsLabel.Font = Enum.Font.Gotham
+        p2ItemsLabel.Text = ""
+        p2ItemsLabel.TextColor3 = Color3.fromRGB(180, 200, 230)
+        p2ItemsLabel.TextSize = 12
+        p2ItemsLabel.TextXAlignment = Enum.TextXAlignment.Left
+        p2ItemsLabel.TextYAlignment = Enum.TextYAlignment.Top
+        p2ItemsLabel.TextWrapped = true
+        p2ItemsLabel.TextScaled = false
+        
+        local function updateState()
+            local acceptedCount = (p1Accept.Value and 1 or 0) + (p2Accept.Value and 1 or 0)
+            if acceptedCount == 2 then
+                stateLabel.Text = "ACCEPTED"
+                stateLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+                task.delay(3, function()
+                    if mainLabel and mainLabel.Parent then
+                        mainLabel:Destroy()
+                    end
+                end)
+            else
+                stateLabel.Text = acceptedCount .. "/2"
+                stateLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            end
+        end
+        
+        local function updateTrading()
+            local p1Items = {}
+            for _, item in pairs(p1Trading:GetChildren()) do
+                table.insert(p1Items, "- " .. item.Name)
+            end
+            p1ItemsLabel.Text = table.concat(p1Items, "\n") or "No items"
+            
+            local p2Items = {}
+            for _, item in pairs(p2Trading:GetChildren()) do
+                table.insert(p2Items, "- " .. item.Name)
+            end
+            p2ItemsLabel.Text = table.concat(p2Items, "\n") or "No items"
+        end
+        
+        local p1AcceptConn = p1Accept:GetPropertyChangedSignal("Value"):Connect(updateState)
+        local p2AcceptConn = p2Accept:GetPropertyChangedSignal("Value"):Connect(updateState)
+        
+        local p1AddedConn = p1Trading.ChildAdded:Connect(updateTrading)
+        local p1RemovedConn = p1Trading.ChildRemoved:Connect(updateTrading)
+        local p2AddedConn = p2Trading.ChildAdded:Connect(updateTrading)
+        local p2RemovedConn = p2Trading.ChildRemoved:Connect(updateTrading)
+        
+        updateState()
+        updateTrading()
+        
+        local stop = false
+        local ancestryConn
+        ancestryConn = session.AncestryChanged:Connect(function(_, parent)
+            if stop then return end
+            if not parent then
+                local acceptedCount = (p1Accept.Value and 1 or 0) + (p2Accept.Value and 1 or 0)
+                if acceptedCount == 2 then
+                    stateLabel.Text = "ACCEPTED"
+                    stateLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+                    task.delay(3, function()
+                        if mainLabel and mainLabel.Parent then
+                            mainLabel:Destroy()
+                        end
+                    end)
+                else
+                    stateLabel.Text = "CANCELLED"
+                    stateLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+                    task.delay(3, function()
+                        if mainLabel and mainLabel.Parent then
+                            mainLabel:Destroy()
+                        end
+                    end)
+                end
+                stop = true
+            end
+        end)
+        
+        mainLabel.Destroying:Connect(function()
+            p1AcceptConn:Disconnect()
+            p2AcceptConn:Disconnect()
+            p1AddedConn:Disconnect()
+            p1RemovedConn:Disconnect()
+            p2AddedConn:Disconnect()
+            p2RemovedConn:Disconnect()
+            ancestryConn:Disconnect()
+        end)
+    end
+    
+    TradeSessions.ChildAdded:Connect(function(child)
+        task.wait(0.1)
+        createSessionLabel(child)
+    end)
+    
+    for _, session in ipairs(TradeSessions:GetChildren()) do
+        createSessionLabel(session)
+    end
+end
+
+tradeSpyY = tradeSpyY + 380
+tradeSpyPage.CanvasSize = UDim2.new(0, 0, 0, tradeSpyY + 10)
+
+local trailViewerPage = tabContents[3]
+local trailViewerY = 5
+
+local trailViewerFrame = Instance.new("Frame")
+trailViewerFrame.Parent = trailViewerPage
+trailViewerFrame.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+trailViewerFrame.Position = UDim2.new(0, 10, 0, trailViewerY)
+trailViewerFrame.Size = UDim2.new(1, -20, 0, 370)
+
+local trailViewerCorner = Instance.new("UICorner")
+trailViewerCorner.Parent = trailViewerFrame
+trailViewerCorner.CornerRadius = UDim.new(0, 10)
+
+local trailViewerTitle = Instance.new("TextLabel")
+trailViewerTitle.Parent = trailViewerFrame
+trailViewerTitle.BackgroundTransparency = 1
+trailViewerTitle.Size = UDim2.new(1, 0, 0, 34)
+trailViewerTitle.Font = Enum.Font.GothamBold
+trailViewerTitle.Text = "TRAIL VIEWER"
+trailViewerTitle.TextColor3 = Color3.fromRGB(60, 120, 255)
+trailViewerTitle.TextSize = 18
+trailViewerTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+local viewerContainer = Instance.new("Frame")
+viewerContainer.Parent = trailViewerFrame
+viewerContainer.Position = UDim2.new(0, 5, 0, 38)
+viewerContainer.Size = UDim2.new(1, -10, 1, -44)
+viewerContainer.BackgroundColor3 = Color3.fromRGB(6, 12, 26)
+viewerContainer.BorderSizePixel = 0
+
+local viewerCorner = Instance.new("UICorner")
+viewerCorner.Parent = viewerContainer
+viewerCorner.CornerRadius = UDim.new(0, 8)
+
+local playerListScrolling = Instance.new("ScrollingFrame")
+playerListScrolling.Parent = viewerContainer
+playerListScrolling.Size = UDim2.new(0.5, -5, 1, 0)
+playerListScrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerListScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+playerListScrolling.ScrollBarThickness = 4
+playerListScrolling.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+playerListScrolling.BorderSizePixel = 0
+
+local trailListScrolling = Instance.new("ScrollingFrame")
+trailListScrolling.Parent = viewerContainer
+trailListScrolling.Position = UDim2.new(0.5, 5, 0, 0)
+trailListScrolling.Size = UDim2.new(0.5, -5, 1, 0)
+trailListScrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+trailListScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+trailListScrolling.ScrollBarThickness = 4
+trailListScrolling.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+trailListScrolling.BorderSizePixel = 0
+
+local playerListLayout = Instance.new("UIListLayout")
+playerListLayout.Parent = playerListScrolling
+playerListLayout.Padding = UDim.new(0, 3)
+
+local trailListLayout = Instance.new("UIListLayout")
+trailListLayout.Parent = trailListScrolling
+trailListLayout.Padding = UDim.new(0, 3)
+
+local trailConnections = {}
+local selectedPlayer = nillocal function updateTrailList(plr)
+    for _, item in pairs(trailListScrolling:GetChildren()) do
+        if item:IsA("TextLabel") then item:Destroy() end
+    end
+    
+    local trails = plr:FindFirstChild("trails")
+    if trails then
+        for _, v in ipairs(trails:GetChildren()) do
+            local trailLabel = Instance.new("TextLabel")
+            trailLabel.Parent = trailListScrolling
+            trailLabel.Size = UDim2.new(1, -5, 0, 24)
+            trailLabel.Text = v.Name
+            trailLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+            trailLabel.BackgroundColor3 = Color3.fromRGB(12, 24, 50)
+            trailLabel.TextSize = 13
+            trailLabel.Font = Enum.Font.Gotham
+            
+            local trailCorner = Instance.new("UICorner")
+            trailCorner.Parent = trailLabel
+            trailCorner.CornerRadius = UDim.new(0, 5)
+        end
+    else
+        local noTrails = Instance.new("TextLabel")
+        noTrails.Parent = trailListScrolling
+        noTrails.Size = UDim2.new(1, -5, 0, 24)
+        noTrails.Text = "No trails found"
+        noTrails.TextColor3 = Color3.fromRGB(120, 120, 140)
+        noTrails.BackgroundColor3 = Color3.fromRGB(12, 24, 50)
+        noTrails.TextSize = 13
+        noTrails.Font = Enum.Font.Gotham
+        
+        local trailCorner = Instance.new("UICorner")
+        trailCorner.Parent = noTrails
+        trailCorner.CornerRadius = UDim.new(0, 5)
+    end
+end
+
+local function watchTrailFolder(plr)
+    if trailConnections[plr] then
+        trailConnections[plr]:Disconnect()
+    end
+    
+    local trails = plr:FindFirstChild("trails")
+    if trails then
+        trailConnections[plr] = trails.ChildAdded:Connect(function()
+            if selectedPlayer == plr then updateTrailList(plr) end
+        end)
+        trails.ChildRemoved:Connect(function()
+            if selectedPlayer == plr then updateTrailList(plr) end
+        end)
+    end
+end
+
+local function renderPlayerList()
+    for _, item in pairs(playerListScrolling:GetChildren()) do
+        if item:IsA("TextButton") then item:Destroy() end
+    end
+    
+    for _, plr in ipairs(players:GetPlayers()) do
+        local btn = Instance.new("TextButton")
+        btn.Parent = playerListScrolling
+        btn.Size = UDim2.new(1, -5, 0, 26)
+        btn.Text = plr.Name
+        btn.TextColor3 = plr == player and Color3.fromRGB(60, 200, 255) or Color3.fromRGB(220, 230, 255)
+        btn.BackgroundColor3 = plr == selectedPlayer and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(10, 20, 42)
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 13
+        btn.BorderSizePixel = 0
+        
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.Parent = btn
+        btnCorner.CornerRadius = UDim.new(0, 5)
+        
+        btn.MouseEnter:Connect(function()
+            if btn.BackgroundColor3 ~= Color3.fromRGB(60, 120, 255) then
+                tweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(20, 40, 80)}):Play()
+            end
+        end)
+        
+        btn.MouseLeave:Connect(function()
+            if btn.BackgroundColor3 ~= Color3.fromRGB(60, 120, 255) then
+                tweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(10, 20, 42)}):Play()
+            end
+        end)
+        
+        btn.MouseButton1Click:Connect(function()
+            for _, b in pairs(playerListScrolling:GetChildren()) do
+                if b:IsA("TextButton") then
+                    b.BackgroundColor3 = Color3.fromRGB(10, 20, 42)
+                end
+            end
+            btn.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+            selectedPlayer = plr
+            updateTrailList(plr)
+            watchTrailFolder(plr)
+        end)
+    end
+end
+
+renderPlayerList()
+
+players.PlayerAdded:Connect(renderPlayerList)
+players.PlayerRemoving:Connect(renderPlayerList)
+
+trailViewerY = trailViewerY + 380
+trailViewerPage.CanvasSize = UDim2.new(0, 0, 0, trailViewerY + 10)
+
+local miscPage = tabContents[4]
+local miscY = 5
+
+local closeMenuButton = Instance.new("TextButton")
+closeMenuButton.Parent = miscPage
+closeMenuButton.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+closeMenuButton.Position = UDim2.new(0.5, -110, 0, miscY)
+closeMenuButton.Size = UDim2.new(0, 220, 0, 54)
+closeMenuButton.Font = Enum.Font.GothamBold
+closeMenuButton.Text = "CLOSE MENU"
+closeMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeMenuButton.TextSize = 18
+
+local closeMenuCorner = Instance.new("UICorner")
+closeMenuCorner.Parent = closeMenuButton
+closeMenuCorner.CornerRadius = UDim.new(0, 12)
+
+closeMenuButton.MouseEnter:Connect(function()
+    tweenService:Create(closeMenuButton, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(220, 40, 40)}):Play()
+end)
+
+closeMenuButton.MouseLeave:Connect(function()
+    tweenService:Create(closeMenuButton, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(180, 30, 30)}):Play()
+end)
+
+closeMenuButton.MouseButton1Click:Connect(function()
+    for state, _ in pairs(collectingState) do
+        collectingState[state] = false
+    end
+    
+    for _, conn in pairs(trailConnections) do
+        if conn then
+            conn:Disconnect()
+        end
+    end
+    trailConnections = {}
+    
+    MainFrame.Visible = false
+    ScreenGui:Destroy()
+end)
+
+miscY = miscY + 65
+
+local restartLabel = Instance.new("TextLabel")
+restartLabel.Parent = miscPage
+restartLabel.BackgroundTransparency = 1
+restartLabel.Position = UDim2.new(0.5, -160, 0, miscY)
+restartLabel.Size = UDim2.new(0, 320, 0, 30)
+restartLabel.Font = Enum.Font.Gotham
+restartLabel.Text = "Restart script to reload menu"
+restartLabel.TextColor3 = Color3.fromRGB(140, 180, 220)
+restartLabel.TextSize = 14
+
+miscPage.CanvasSize = UDim2.new(0, 0, 0, miscY + 45)
+
+local VirtualUser = game:GetService("VirtualUser")
+player.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    wait(1)
+    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+end)
+
+return ChernushkaSpeed
