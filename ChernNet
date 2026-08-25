@@ -8,6 +8,7 @@ local camera = workspace.CurrentCamera
 local players = game:GetService("Players")
 local tweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ChernushkaSpeed"
@@ -104,6 +105,20 @@ end)
 local function createMenu()
     keyFrame:Destroy()
     
+    local startTime = tick()
+    local timerRunning = true
+    
+    local function formatTime(seconds)
+        local hrs = math.floor(seconds / 3600)
+        local mins = math.floor((seconds % 3600) / 60)
+        local secs = math.floor(seconds % 60)
+        if hrs > 0 then
+            return string.format("%02d:%02d:%02d", hrs, mins, secs)
+        else
+            return string.format("%02d:%02d", mins, secs)
+        end
+    end
+    
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Name = "ToggleButton"
     ToggleButton.Parent = ScreenGui
@@ -172,14 +187,34 @@ local function createMenu()
     local Title = Instance.new("TextLabel")
     Title.Parent = TitleBar
     Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, -60, 1, 0)
-    Title.Position = UDim2.new(0, 20, 0, 0)
+    Title.Size = UDim2.new(0.6, 0, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
     Title.Font = Enum.Font.GothamBold
     Title.Text = "CHERNUSHKA SPEED CITY"
     Title.TextColor3 = Color3.fromRGB(60, 120, 255)
-    Title.TextSize = 22
+    Title.TextSize = 18
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.TextScaled = false
+
+    local timerLabel = Instance.new("TextLabel")
+    timerLabel.Parent = TitleBar
+    timerLabel.BackgroundTransparency = 1
+    timerLabel.Size = UDim2.new(0.6, 0, 0.5, 0)
+    timerLabel.Position = UDim2.new(0.02, 0, 0.5, 2)
+    timerLabel.Font = Enum.Font.Gotham
+    timerLabel.Text = "Time: 00:00"
+    timerLabel.TextColor3 = Color3.fromRGB(140, 180, 220)
+    timerLabel.TextSize = 12
+    timerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    timerLabel.ZIndex = 3
+
+    coroutine.wrap(function()
+        while timerRunning and MainFrame and MainFrame.Parent do
+            task.wait(1)
+            local elapsed = tick() - startTime
+            timerLabel.Text = "Time: " .. formatTime(elapsed)
+        end
+    end)()
 
     local CloseButton = Instance.new("TextButton")
     CloseButton.Parent = TitleBar
@@ -215,7 +250,7 @@ local function createMenu()
     TabCorner.Parent = TabFrame
     TabCorner.CornerRadius = UDim.new(0, 12)
 
-    local tabNames = {"AUTOFARM", "TRADE SPY", "TRAIL VIEWER", "TRADE TOOLS", "MISC"}
+    local tabNames = {"AUTOFARM", "TRADE SPY", "TRAIL VIEWER", "TRADE TOOLS", "TELEPORTS", "MISC"}
     local tabButtons = {}
     local tabContents = {}
     local selectedTab = 1
@@ -224,12 +259,12 @@ local function createMenu()
         local btn = Instance.new("TextButton")
         btn.Parent = TabFrame
         btn.BackgroundColor3 = i == 1 and Color3.fromRGB(60, 120, 255) or Color3.fromRGB(14, 22, 46)
-        btn.Position = UDim2.new(0, 6 + ((i-1) * 92), 0, 4)
-        btn.Size = UDim2.new(0, 86, 0, 36)
+        btn.Position = UDim2.new(0, 4 + ((i-1) * 82), 0, 4)
+        btn.Size = UDim2.new(0, 76, 0, 36)
         btn.Font = Enum.Font.GothamBold
         btn.Text = name
         btn.TextColor3 = i == 1 and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(140, 180, 255)
-        btn.TextSize = 11
+        btn.TextSize = 10
         btn.ZIndex = 3
         
         local btnCorner = Instance.new("UICorner")
@@ -262,7 +297,7 @@ local function createMenu()
     ContentCorner.Parent = ContentFrame
     ContentCorner.CornerRadius = UDim.new(0, 14)
 
-    for i = 1, 5 do
+    for i = 1, 6 do
         local page = Instance.new("ScrollingFrame")
         page.Parent = ContentFrame
         page.BackgroundColor3 = Color3.fromRGB(6, 10, 22)
@@ -382,6 +417,43 @@ local function createMenu()
         end)
         
         return frame
+    end
+
+    local function createTeleportButton(parent, text, cf, y)
+        local btn = Instance.new("TextButton")
+        btn.Parent = parent
+        btn.Size = UDim2.new(0.92, 0, 0, 38)
+        btn.Position = UDim2.new(0.04, 0, 0, y)
+        btn.Text = text
+        btn.BackgroundColor3 = Color3.fromRGB(55, 55, 90)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.GothamSemibold
+        btn.TextSize = 13
+        btn.BorderSizePixel = 0
+        
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.Parent = btn
+        btnCorner.CornerRadius = UDim.new(0, 10)
+        
+        btn.MouseEnter:Connect(function()
+            tweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(75, 75, 120)}):Play()
+        end)
+        
+        btn.MouseLeave:Connect(function()
+            tweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(55, 55, 90)}):Play()
+        end)
+        
+        btn.MouseButton1Click:Connect(function()
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                pcall(function()
+                    hrp.CFrame = cf
+                end)
+            end
+        end)
+        
+        return btn
     end
 
     local collectingState = {
@@ -557,6 +629,7 @@ local function createMenu()
     end)
 
     CloseButton.MouseButton1Click:Connect(function()
+        timerRunning = false
         MainFrame.Visible = false
     end)
 
@@ -1150,22 +1223,103 @@ local function createMenu()
     tradeToolsY = tradeToolsY + 430
     tradeToolsPage.CanvasSize = UDim2.new(0, 0, 0, tradeToolsY + 10)
 
-    local miscPage = tabContents[5]
+    local teleportsPage = tabContents[5]
+    local teleportsY = 5
+
+    local teleportsFrame = Instance.new("Frame")
+    teleportsFrame.Parent = teleportsPage
+    teleportsFrame.BackgroundColor3 = Color3.fromRGB(8, 16, 34)
+    teleportsFrame.Position = UDim2.new(0, 10, 0, teleportsY)
+    teleportsFrame.Size = UDim2.new(1, -20, 0, 370)
+
+    local teleportsCorner = Instance.new("UICorner")
+    teleportsCorner.Parent = teleportsFrame
+    teleportsCorner.CornerRadius = UDim.new(0, 10)
+
+    local teleportsTitle = Instance.new("TextLabel")
+    teleportsTitle.Parent = teleportsFrame
+    teleportsTitle.BackgroundTransparency = 1
+    teleportsTitle.Size = UDim2.new(1, 0, 0, 34)
+    teleportsTitle.Font = Enum.Font.GothamBold
+    teleportsTitle.Text = "TELEPORTS"
+    teleportsTitle.TextColor3 = Color3.fromRGB(60, 120, 255)
+    teleportsTitle.TextSize = 18
+    teleportsTitle.TextXAlignment = Enum.TextXAlignment.Center
+
+    local teleportsContainer = Instance.new("ScrollingFrame")
+    teleportsContainer.Parent = teleportsFrame
+    teleportsContainer.Position = UDim2.new(0, 5, 0, 38)
+    teleportsContainer.Size = UDim2.new(1, -10, 1, -44)
+    teleportsContainer.BackgroundColor3 = Color3.fromRGB(6, 12, 26)
+    teleportsContainer.BorderSizePixel = 0
+    teleportsContainer.ScrollBarThickness = 6
+    teleportsContainer.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 255)
+    teleportsContainer.CanvasSize = UDim2.new(0, 0, 0, 400)
+
+    local teleportsContainerCorner = Instance.new("UICorner")
+    teleportsContainerCorner.Parent = teleportsContainer
+    teleportsContainerCorner.CornerRadius = UDim.new(0, 8)
+
+    local tpY = 5
+    createTeleportButton(teleportsContainer, "Original Map (Spawn)", CFrame.new(-87.4653931, 30.1499977, 0.0819692686), tpY)
+    tpY = tpY + 45
+
+    createTeleportButton(teleportsContainer, "Ghost City", CFrame.new(-3825.7, -33.8, 7304.7), tpY)
+    tpY = tpY + 45
+
+    teleportsContainer.CanvasSize = UDim2.new(0, 0, 0, tpY + 30)
+
+    teleportsY = teleportsY + 380
+    teleportsPage.CanvasSize = UDim2.new(0, 0, 0, teleportsY + 10)
+
+    local miscPage = tabContents[6]
     local miscY = 5
+
+    local rejoinBtn = Instance.new("TextButton")
+    rejoinBtn.Parent = miscPage
+    rejoinBtn.Size = UDim2.new(0.92, 0, 0, 42)
+    rejoinBtn.Position = UDim2.new(0.04, 0, 0, miscY)
+    rejoinBtn.Text = "REJOIN"
+    rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    rejoinBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 90)
+    rejoinBtn.Font = Enum.Font.GothamBold
+    rejoinBtn.TextSize = 14
+    rejoinBtn.BorderSizePixel = 0
+
+    local rejoinCorner = Instance.new("UICorner")
+    rejoinCorner.CornerRadius = UDim.new(0, 10)
+    rejoinCorner.Parent = rejoinBtn
+
+    rejoinBtn.MouseEnter:Connect(function()
+        tweenService:Create(rejoinBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(75, 75, 120)}):Play()
+    end)
+
+    rejoinBtn.MouseLeave:Connect(function()
+        tweenService:Create(rejoinBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(55, 55, 90)}):Play()
+    end)
+
+    rejoinBtn.MouseButton1Click:Connect(function()
+        timerRunning = false
+        local placeId = game.PlaceId
+        TeleportService:Teleport(placeId, player)
+    end)
+
+    miscY = miscY + 52
 
     local closeMenuButton = Instance.new("TextButton")
     closeMenuButton.Parent = miscPage
     closeMenuButton.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
-    closeMenuButton.Position = UDim2.new(0.5, -110, 0, miscY)
-    closeMenuButton.Size = UDim2.new(0, 220, 0, 54)
+    closeMenuButton.Position = UDim2.new(0.04, 0, 0, miscY)
+    closeMenuButton.Size = UDim2.new(0.92, 0, 0, 42)
     closeMenuButton.Font = Enum.Font.GothamBold
     closeMenuButton.Text = "CLOSE MENU"
     closeMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeMenuButton.TextSize = 18
+    closeMenuButton.TextSize = 14
+    closeMenuButton.BorderSizePixel = 0
 
     local closeMenuCorner = Instance.new("UICorner")
     closeMenuCorner.Parent = closeMenuButton
-    closeMenuCorner.CornerRadius = UDim.new(0, 12)
+    closeMenuCorner.CornerRadius = UDim.new(0, 10)
 
     closeMenuButton.MouseEnter:Connect(function()
         tweenService:Create(closeMenuButton, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(220, 40, 40)}):Play()
@@ -1176,6 +1330,7 @@ local function createMenu()
     end)
 
     closeMenuButton.MouseButton1Click:Connect(function()
+        timerRunning = false
         for state, _ in pairs(collectingState) do
             collectingState[state] = false
         end
@@ -1191,19 +1346,20 @@ local function createMenu()
         ScreenGui:Destroy()
     end)
 
-    miscY = miscY + 65
+    miscY = miscY + 55
 
     local restartLabel = Instance.new("TextLabel")
     restartLabel.Parent = miscPage
     restartLabel.BackgroundTransparency = 1
-    restartLabel.Position = UDim2.new(0.5, -160, 0, miscY)
-    restartLabel.Size = UDim2.new(0, 320, 0, 30)
+    restartLabel.Position = UDim2.new(0.04, 0, 0, miscY)
+    restartLabel.Size = UDim2.new(0.92, 0, 0, 30)
     restartLabel.Font = Enum.Font.Gotham
     restartLabel.Text = "Restart script to reload menu"
     restartLabel.TextColor3 = Color3.fromRGB(140, 180, 220)
-    restartLabel.TextSize = 14
+    restartLabel.TextSize = 12
+    restartLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    miscPage.CanvasSize = UDim2.new(0, 0, 0, miscY + 45)
+    miscPage.CanvasSize = UDim2.new(0, 0, 0, miscY + 40)
 
     local VirtualUser = game:GetService("VirtualUser")
     player.Idled:Connect(function()
